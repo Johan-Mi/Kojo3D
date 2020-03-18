@@ -26,7 +26,6 @@ val points = Array[Tuple3[Double, Double, Double]](
     Tuple3(1, 1, 0),
     Tuple3(1, 1, 1)
 );
-val numPoints = points.length;
 val pPoints = Array.fill[Picture](points.length)(
     Picture {
             setPenColor(noColor);
