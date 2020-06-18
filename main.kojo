@@ -10,10 +10,8 @@ def viewTransform(p : Tuple3[Double, Double, Double]) : Tuple3[Double, Double, D
 
     if(z == 0)
         z = 0.0000001;
-    x *= zScale / z;
-    y *= zScale / z;
 
-    return Tuple3(x, y, z);
+    return Tuple3(x * zScale / z, y * zScale / z, z);
 }
 
 val points = Array[Tuple3[Double, Double, Double]](
@@ -48,7 +46,7 @@ val lines = Array(
     Tuple2(5, 7),
     Tuple2(6, 7),
 );
-val pLines = Array.fill[Picture](lines.length)(Picture {});
+var pLines = Picture {};
 
 var camX : Double = 0.5;
 var camY : Double = 0.5;
@@ -111,32 +109,32 @@ drawLoop {
         else
             pPoints(i).setPosition(cwidth, cheight);
     }
-
-    for(i <- 0 to lines.length - 1) {
-        var p1 = viewTransform(points(lines(i)._1));
-        var p2 = viewTransform(points(lines(i)._2));
-        pLines(i).erase();
-        if(p1._3 > 0 || p2._3 > 0) {
-            if(p1._3 < 0 || p2._3 < 0) {
-                if(p2._3 < 0) {
-                    val swp = p1;
-                    p1 = p2;
-                    p2 = swp;
+    
+    pLines.erase();
+    pLines = Picture {
+        setPenColor(black);
+        setPenThickness(5);
+        for(line <- lines) {
+            var p1 = viewTransform(points(line._1));
+            var p2 = viewTransform(points(line._2));
+            if(p1._3 > 0 || p2._3 > 0) {
+                if(p1._3 < 0 || p2._3 < 0) {
+                    if(p2._3 < 0) {
+                        val swp = p1;
+                        p1 = p2;
+                        p2 = swp;
+                    }
+                    val f: Double = p1._3 / (p2._3 - p1._3);
+                    p1 = Tuple3(
+                        (p1._1 * f - p2._1 * (f - 1)) / (p2._3 - p1._3),
+                        (p1._2 * f - p2._2 * (f - 1)) / (p2._3 - p1._3),
+                        0
+                    );
                 }
-                val f: Double = p1._3 / (p2._3 - p1._3);
-                p1 = Tuple3(
-                    (p1._1 * f - p2._1 * (f - 1)) / (p2._3 - p1._3),
-                    (p1._2 * f - p2._2 * (f - 1)) / (p2._3 - p1._3),
-                    0
-                );
-            }
-            pLines(i) = Picture {
-                setPenColor(black);
-                setPenThickness(5);
                 jumpTo(p1._1, p1._2);
                 lineTo(p2._1, p2._2);
-            };
-            draw(pLines(i));
+            }
         }
     }
+    draw(pLines);
 }
